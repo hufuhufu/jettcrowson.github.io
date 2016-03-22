@@ -21,7 +21,7 @@ var CMD = {
   },
   gameLoop: setInterval(function() {
     CMD.counter++;
-    if(CMD.counter%10==0){
+    if(CMD.counter%10===0){
       CMD.commands.save(false);
     }
     CMD.addData(CMD.autoIncrement);
@@ -77,7 +77,7 @@ var CMD = {
   },
   //Convert bytes->->kb->mb->gb->etc
   formatBytes: function(bytes,decimals) {
-   if(bytes == 0) return '0 Byte';
+   if(bytes === 0) return '0 Byte';
    var k = 1024;
    var dm = decimals + 1 || 3;
    var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
@@ -97,9 +97,9 @@ var CMD = {
   },
 
   //LIST ALL COMMANDS HERE, OTHERWISE THEY WILL RETURN AS NOT EXISTING
-  commandList: ["help", "mineData", "save", "autoMine", "sellData", "buyData", "buyCommand", "load"],
+  commandList: ["help", "mineData", "save", "autoMine", "sellData", "buyData", "buyCommand", "load", "cls"],
   //SET EACH FUNCTION TO WHETHER IT IS UNLOCKED
-  commandUnlocked: [true, true, true, false, false, false, true, true],
+  commandUnlocked: [true, true, true, false, false, false, true, true, true],
   //Command object stores all game functions, not the actual engine functions
   commands: {
     help: function(toHelp) {
@@ -117,6 +117,10 @@ var CMD = {
           case "save":
             CMD.respond(toHelp+": Saves files to your browser so you can load the game.");
             CMD.respond("To use: save");
+          break;
+          case "load":
+            CMD.respond(toHelp+": Loads previously saved files.");
+            CMD.respond("To use: load");
           break;
           case "autoMine":
             CMD.respond(toHelp+": Every second, increments your data by the auto increment amount. Default is 1 byte per second.");
@@ -141,6 +145,10 @@ var CMD = {
             CMD.respond("Available commands: "+listOfAvailable.join(
         "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"));
             CMD.respond("To use: buyCommand [command]");
+          break;
+          case "cls":
+            CMD.respond(toHelp+": Clears the screen.");
+            CMD.respond("To use: cls");
           break;
           default:
             CMD.respond("Command not found or no help is available. Type 'help' with no arguments to see a list of commands.");
@@ -171,7 +179,7 @@ var CMD = {
     buyCommand: function(toBuy) {
     if(toBuy!==undefined){
       //Make sure that the command exists
-      var commandIndex = CMD.commands.goals[0].indexOf(toBuy); 
+      var commandIndex = CMD.commands.goals[0].indexOf(toBuy);
       if(commandIndex >= 0){
         //Make sure there is enough data to buy the command.
         if (CMD.data >= CMD.commands.goals[1][commandIndex]){
@@ -231,7 +239,7 @@ var CMD = {
         Number(amount);
         //You must sell at least 100, and you must have enough to sell
         if (CMD.data >= amount && CMD.data >= 100 && typeof amount !== "number") {
-          //Here is where we deteriorate the data. Too much? 
+          //Here is where we deteriorate the data. Too much?
           var loss = Math.floor(Math.random() * 15 + 10);
           console.log(loss);
           //Apply the loss to the total money received
@@ -281,6 +289,10 @@ var CMD = {
       } else {
         CMD.respond("Local storage is not supported on your browser.");
       }
+    },
+    cls: function() {
+      $("#responses").text("");
+      CMD.respond("");
     }
   }
 };
@@ -316,8 +328,8 @@ $('#input').keyup(function(e) {
       }
       $('#input').val(sSelectedCommand);
     }
-  })
-  //Called when the user first enters the page. 
+});
+  //Called when the user first enters the page.
 $(document).ready(function() {
   CMD.respond("Welcome to CMD++");
   CMD.respond("Your goal here is to mine data.");
