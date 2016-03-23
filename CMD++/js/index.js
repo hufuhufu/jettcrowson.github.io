@@ -1,4 +1,3 @@
-
 //All game values and functions will be stored here.
 var CMD = {
   //The currency variables
@@ -13,6 +12,10 @@ var CMD = {
   dataShow: 0,
   data: 0,
   counter:0,
+  currStorage: "selectronTube",
+  storages: ["selectronTube","floppyDisk", "zipDrive", "DVD", "sdCard", "flashDrive", "SSD", "ssdArray", "serverRack", "serverRoom", "serverWarehouse", "multipleLocations", "multipleCountries", "smallAfricanCountry", "alienSpaceArray", "enslaveHumans"],
+  storageCapacities: ["512Bytes", "1509949Bytes", "100MB", "5GB", "32GB", "512GB", "1TB", "16TB", "100TB", "1PB", "512PB", "128EB", "1ZB", "512ZB", "100000YB", "9999999999999999YB"],
+  storagePricing: [0, 2500, 170000, 500000, 1500000, 8000000, 25000000, 75000000, 1750000000, 5250000000, 14000000000, 10000000000000, 40000000000000, 400000000000000, 3000000000000000, 9007199254740991],
   //Creates a new line in the CMD
   respond: function(text) {
     //Add a new table row, used as a line in the CMD
@@ -24,7 +27,15 @@ var CMD = {
     if(CMD.counter%10===0){
       CMD.commands.save(false);
     }
-    CMD.addData(CMD.autoIncrement);
+    if(CMD.checkStorage()){
+      CMD.addData(CMD.autoIncrement);
+    }else{
+      CMD.update();
+      if(CMD.counter%10===0){
+      CMD.respond("Please upgrade your storage with upgradeStorage.");
+    }
+    }
+
   }, 1000),
   //When the user enters a command, this is run to check if they typed anything, and if they did, submit it to CMD.runCommand().
   command: function() {
@@ -48,6 +59,10 @@ var CMD = {
   //Check if the command exists, and if it does, run it.
   runCommand: function(commandToRun) {
     //REMEMBER: ALWAYS ADD YOUR COMMANDS TO THE COMMANDLIST ARRAY AND THE COMMAND OBJECT
+    //Secret command to add 10% of your storage capacity. This is mostly just for testing what works. I'll remove this before release.
+    if(commandToRun==="poppies"){
+      CMD.data+=CMD.formatLargeData(CMD.storageCapacities[CMD.storages.indexOf(CMD.currStorage)])/10;
+    }
     //Break away args
     if (commandToRun.indexOf(" ") !== -1 && commandToRun[commandToRun.indexOf(
       " ") + 1] === undefined) {
@@ -73,17 +88,56 @@ var CMD = {
   //Update the data count
   update: function() {
     $("#dataCount").html(CMD.formatBytes(CMD.data));
-    $("#moneyCount").html("$" + CMD.money);
+    $("#moneyCount").html("$" + CMD.nFormat(CMD.money));
+    var per = Math.floor(100*CMD.data/CMD.formatLargeData(CMD.storageCapacities[CMD.storages.indexOf(CMD.currStorage)]));
+    $("#capac").html(per+"%");
+  },
+  checkStorage: function(){
+    if(CMD.data<=CMD.formatLargeData(CMD.storageCapacities[CMD.storages.indexOf(CMD.currStorage)])){
+      return true;
+    }else{
+      return false;
+    }
   },
   //Convert bytes->->kb->mb->gb->etc
   formatBytes: function(bytes,decimals) {
    if(bytes === 0) return '0 Byte';
    var k = 1024;
-   var dm = decimals + 1 || 3;
+   var dm = decimals + 1 || 2;
    var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
    var i = Math.floor(Math.log(bytes) / Math.log(k));
    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+  },
+  formatLargeData: function(str){
+    var digits = str.replace(/\D/g, "");
+    var letters = str.replace(/[^a-z]/gi, "");
 
+    switch(letters){
+      case "Bytes":
+        return digits;
+      break;
+      case "MB":
+        return digits*1024*1024;
+      break;
+      case "GB":
+        return digits*1024*1024*1024;
+      break;
+      case "TB":
+        return digits*1024*1024*1024*1024;
+      break;
+      case "PB":
+        return digits*1024*1024*1024*1024*1024;
+      break;
+      case "EB":
+        return digits*1024*1024*1024*1024*1024*1024;
+      break;
+      case "ZB":
+        return digits*1024*1024*1024*1024*1024*1024*1024;
+      break;
+      case "YB":
+        return digits*1024*1024*1024*1024*1024*1024*1024*1024;
+      break;
+    }
   },
   //Add data
   addData: function(amount) {
@@ -95,11 +149,22 @@ var CMD = {
     CMD.money += amount;
     CMD.update();
   },
+  nLog: Math.log(10),
+  nArray: ["", "k", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc", "UnD", "DuD", "TrD", "QaD", "QiD", "SeD", "SpD", "OcD", "NoD", "Vi", "UnV"],
+  floor: function(n) {
+  return (Math.abs(Math.abs(n) - Math.abs(Math.floor(n))) >= 0.999999991) ? ((n >= 0) ? Math.ceil(n) : Math.floor(n)) : ((n >= 0) ? Math.floor(n) : Math.ceil(n));
+  },
+ nFormat: function(n, d) {
+  var l = (CMD.floor(Math.log(Math.abs(n)) / CMD.nLog) <= 0) ? 0 : CMD.floor(Math.log(Math.abs(n)) / CMD.nLog),
+  p = (l % 3 === 0) ? 2 : (((l - 1) % 3 === 0) ? 1 : 0),
+  r = (Math.abs(n) < 1000) ? ((typeof d === "number") ? n.toFixed(d) : CMD.floor(n)) : (CMD.floor(n / (Math.pow(10, CMD.floor(l / 3) * 3 - p))) / Math.pow(10, p));
+  return (r + CMD.nArray[CMD.floor(l / 3)] + ((CMD.floor(r) === 42) ? "~" : "")) || "Infinite";
+},
 
   //LIST ALL COMMANDS HERE, OTHERWISE THEY WILL RETURN AS NOT EXISTING
-  commandList: ["help", "mineData", "save", "autoMine", "sellData", "buyData", "buyCommand", "load", "cls"],
+  commandList: ["help", "mineData", "save", "autoMine", "sellData", "buyData", "buyCommand", "upgradeStorage", "currentStorage", "load", "cls"],
   //SET EACH FUNCTION TO WHETHER IT IS UNLOCKED
-  commandUnlocked: [true, true, true, false, false, false, true, true, true],
+  commandUnlocked: [true, true, true, false, false, false, true, true, true, true, true],
   //Command object stores all game functions, not the actual engine functions
   commands: {
     help: function(toHelp) {
@@ -142,13 +207,27 @@ var CMD = {
                 listOfAvailable.push(CMD.commands.goals[0][b] + ": "+(CMD.formatBytes(CMD.commands.goals[1][b])));
               }
             }
-            CMD.respond("Available commands: "+listOfAvailable.join(
-        "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"));
+            CMD.respond("Available commands: "+listOfAvailable.join(", "));
             CMD.respond("To use: buyCommand [command]");
           break;
           case "cls":
             CMD.respond(toHelp+": Clears the screen.");
             CMD.respond("To use: cls");
+          break;
+          case "upgradeStorage":
+            var li = [];
+              for(var q = 0; q<CMD.storages.length;q++){
+                if(q>CMD.storages.indexOf(CMD.currStorage)){
+                li.push(CMD.storages[q]+": "+CMD.storageCapacities[q]+" - $"+CMD.nFormat(CMD.storagePricing[q]));
+              }
+            }
+            CMD.respond(toHelp+": Upgrades the max amount of data you can hold.");
+            CMD.respond("Available upgrades: "+li.join(",    "));
+            CMD.respond("To use: upgradeStorage [storage device]");
+          break;
+          case "currentStorage":
+            CMD.respond(toHelp+": Check how much data you can hold.");
+            CMD.respond("Usage: currentStorage");
           break;
           default:
             CMD.respond("Command not found or no help is available. Type 'help' with no arguments to see a list of commands.");
@@ -164,7 +243,7 @@ var CMD = {
         }
       }
       CMD.respond(availableCommands.join(
-        "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"));
+        ", "));
       CMD.respond(" ");
       CMD.respond("For specific command help type, 'help [command]'");
       CMD.respond("########################################");
@@ -205,10 +284,32 @@ var CMD = {
       CMD.respond("Please enter a command to buy, or type, 'help buyCommand' to see available commands.");
     }
   },
+  upgradeStorage: function(toUpgrade){
+    if(toUpgrade !== undefined){
+      for(var r = 0; r < CMD.storages.length; r++){
+        if(CMD.storages[r]===toUpgrade){
+          if(CMD.money>=CMD.storagePricing[CMD.storages.indexOf(toUpgrade)]&& CMD.storages.indexOf(toUpgrade)>CMD.storages.indexOf(CMD.currStorage)){
+            CMD.money-=CMD.storagePricing[CMD.storages.indexOf(toUpgrade)];
+            CMD.currStorage=CMD.storages[CMD.storages.indexOf(toUpgrade)];
+            CMD.respond("Storage upgraded to "+CMD.currStorage+" with a capacity of "+CMD.storageCapacities[CMD.storages.indexOf(CMD.currStorage)]);
+          }else{
+            CMD.respond("Not enough money or you may have already unlocked this storage device.");
+          }
+        }
+      }
+    }else{
+      CMD.respond("Please enter an argument. For help type 'help upgradeStorage'");
+    }
+  },
     //Amount mined is determined by the CMD.increment variable. Default is 1
     mineData: function() {
-      CMD.respond("Data mined.");
-      CMD.addData(CMD.increment);
+      if(CMD.checkStorage()){
+        CMD.respond("Data mined.");
+        CMD.addData(CMD.increment);
+      }else{
+        CMD.respond("Please upgrade your storage with upgradeStorage.");
+      }
+
     },
     //Set CMD.autoIncrement to the amount needed
     autoMine: function() {
@@ -233,6 +334,9 @@ var CMD = {
         CMD.respond("Argument needed. Try: " + "buyData [amount]");
       }
     },
+    currentStorage: function(){
+      CMD.respond("Your "+CMD.currStorage+" can hold "+CMD.storageCapacities[CMD.storages.indexOf(CMD.currStorage)]);
+    },
     //Sell data. Data is 1:$1 with money but deteriorates randomly (see var loss below)
     sellData: function(amount) {
       if (amount !== undefined) {
@@ -245,7 +349,7 @@ var CMD = {
           //Apply the loss to the total money received
           var transfer = Math.round(amount * (1 - loss / 100));
           CMD.money += transfer;
-          CMD.data = CMD.data - amount;
+          CMD.data -= amount;
           //No idea what data integrity is but it sounded right.
           CMD.respond(loss + "% data integrity lost in transfer. Data sold: " +
             amount + ". Money gained: $" + transfer + ".");
@@ -259,7 +363,7 @@ var CMD = {
       }
     },
     load:function(){
-      if(localStorage.getItem("data")!==null&&localStorage.getItem("increment")!==null){
+      if(localStorage.getItem("data")!=="null"&&localStorage.getItem("increment")!=="null"){
         //Load save.
         CMD.data = JSON.parse(localStorage.getItem("data"));
         CMD.money = JSON.parse(localStorage.getItem("money"));
@@ -267,6 +371,7 @@ var CMD = {
         CMD.autoIncrement = JSON.parse(localStorage.getItem("autoIncrement"));
         CMD.commandUnlocked = JSON.parse(localStorage.getItem("unlocked"));
         CMD.commands.goals[2] = JSON.parse(localStorage.getItem("bought"));
+        CMD.currStorage = JSON.parse(localStorage.getItem("storage"));
         CMD.respond("Save loaded.");
       }else{
         CMD.commands.save();
@@ -274,14 +379,16 @@ var CMD = {
       }
     },
     save: function(respondSave) {
-      if(typeof(Storage) !== undefined) {
+      if(typeof(Storage) !== "undefined") {
         //Store variables in local storage
         localStorage.setItem("data", JSON.stringify(CMD.data));
         localStorage.setItem("money", JSON.stringify(CMD.money));
         localStorage.setItem("increment", JSON.stringify(CMD.increment));
         localStorage.setItem("autoIncrement", JSON.stringify(CMD.autoIncrement));
         localStorage.setItem("unlocked", JSON.stringify(CMD.commandUnlocked));
+        localStorage.setItem("storage", JSON.stringify(CMD.currStorage));
         localStorage.setItem("bought", JSON.stringify(CMD.commands.goals[2]));
+
         //Gives the option to respond "Data saved" if you pass a variable. This is used so it doesn't output this every 10 seconds when the game is saved.
         if(respondSave===undefined){
         CMD.respond("Data saved.");
@@ -333,6 +440,12 @@ $('#input').keyup(function(e) {
 $(document).ready(function() {
   CMD.respond("Welcome to CMD++");
   CMD.respond("Your goal here is to mine data.");
+  if(localStorage.getItem("storage")===null||localStorage.getItem("data")===null||localStorage.getItem("money")===null){
+    CMD.commands.save();
+  }else{
   CMD.commands.load();
+  }
+
   CMD.respond("Type 'help' to get started.");
+
 });

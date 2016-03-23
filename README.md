@@ -2,6 +2,9 @@
 #####An incremental game formed around a console.
 Welcome to CMD++. This game is still in extremely early development, so if anything is not perfect, or features are missing, be patient, or add them yourself by contributing! If you have any ideas, questions, bugs, suggestions, etc. post them in the [CMD++ Subreddit](https://www.reddit.com/r/cmdplusplus). The only way this will get better is with your feedback and contributions!
 
+######Attention:
+If your save does not work after an update, try clearing your local storage on your browser. I'll try my best to make sure this does not happen though.
+
 #####Todo:
 - Add storage sizes
 - Add save and load function
@@ -12,6 +15,13 @@ Welcome to CMD++. This game is still in extremely early development, so if anyth
 - PLEASE COMMIT MORE TODOS
 
 #####Version History
+
+######V0.3
+- Added storage sizes
+- New commands: `upgradeStorage`, `currentStorage` and added `help [function]` for both
+- Added version number
+- Added the functions `CMD.formatLargeData()` and `CMD.nFormat()`
+- Prices may need balancing
 
 ######V0.2
 - Added `save` and `load`

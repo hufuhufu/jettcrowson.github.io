@@ -80,7 +80,7 @@ textarea:focus,
 button:focus {
   outline: none;
 }
-#dataCount, #moneyCount{
+#dataCount, #moneyCount, #capac{
   display:inline;
 }
 #version {
@@ -89,6 +89,7 @@ button:focus {
   right: 0;
   margin-right: 50px;
   font-family: "Courier New", "Courier", monospace;
+  color: white;
 }
 
 ::-webkit-scrollbar {
